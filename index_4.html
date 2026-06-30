@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="es-AR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Asistente 4D · Conocimiento interno</title>
+<meta name="description" content="Asistente interno de 4D Producciones, entrenado con los manuales, procesos y datos de la empresa. Prototipo desarrollado por Andamio.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --o:#ED6A1C; --o2:#FF8237; --o-soft:rgba(237,106,28,.14);
+    --bg:#131418; --panel:#191A1F; --panel2:#1F2127; --card:#22242B;
+    --line:#2C2E36; --line2:#383B45;
+    --tx:#ECEDEF; --tx2:#A6A9B3; --tx3:#71747E;
+    --sans:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{font-family:var(--sans);background:var(--bg);color:var(--tx);-webkit-font-smoothing:antialiased;overflow:hidden}
+  button{font-family:inherit;cursor:pointer}
+  ::-webkit-scrollbar{width:9px}
+  ::-webkit-scrollbar-thumb{background:#34373f;border-radius:8px}
+  ::-webkit-scrollbar-track{background:transparent}
+
+  .app{display:grid;grid-template-columns:272px 1fr;height:100dvh}
+
+  /* ---- brand mark ---- */
+  .logo{width:34px;height:34px;flex:0 0 auto}
+  .brand{display:flex;align-items:center;gap:11px}
+  .brand .name{font-weight:700;font-size:1.05rem;letter-spacing:-.01em}
+  .brand .name small{display:block;font-weight:500;font-size:.7rem;color:var(--tx3);letter-spacing:.02em;margin-top:1px}
+
+  /* ---- sidebar ---- */
+  .side{background:var(--panel);border-right:1px solid var(--line);display:flex;flex-direction:column;min-height:0}
+  .side-top{padding:18px 16px 14px;border-bottom:1px solid var(--line)}
+  .new-btn{margin-top:16px;width:100%;display:flex;align-items:center;justify-content:center;gap:8px;
+    background:var(--o);color:#1a1206;font-weight:600;font-size:.9rem;border:none;border-radius:10px;padding:11px;transition:background .15s,transform .12s}
+  .new-btn:hover{background:var(--o2);transform:translateY(-1px)}
+  .side-scroll{flex:1;overflow-y:auto;padding:16px 12px;min-height:0}
+  .side-label{font-size:.68rem;font-weight:600;letter-spacing:.13em;text-transform:uppercase;color:var(--tx3);padding:0 6px 8px}
+  .topic{display:flex;align-items:center;gap:11px;width:100%;text-align:left;background:transparent;border:none;color:var(--tx2);
+    padding:10px 10px;border-radius:9px;font-size:.9rem;transition:background .14s,color .14s}
+  .topic:hover{background:var(--panel2);color:var(--tx)}
+  .topic .ti{width:30px;height:30px;border-radius:8px;background:var(--o-soft);display:grid;place-items:center;flex:0 0 auto}
+  .side-sep{height:1px;background:var(--line);margin:16px 6px}
+  .recent{display:block;width:100%;text-align:left;background:transparent;border:none;color:var(--tx2);
+    padding:9px 10px;border-radius:8px;font-size:.86rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;transition:background .14s,color .14s}
+  .recent:hover{background:var(--panel2);color:var(--tx)}
+  .side-foot{border-top:1px solid var(--line);padding:12px 14px;display:flex;align-items:center;justify-content:space-between;gap:10px}
+  .userchip{display:flex;align-items:center;gap:10px;min-width:0}
+  .userchip .av{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#3a3d47,#2a2c33);display:grid;place-items:center;font-weight:600;font-size:.8rem;color:var(--tx);flex:0 0 auto}
+  .userchip .who{min-width:0}
+  .userchip .who b{display:block;font-size:.84rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .userchip .who span{font-size:.72rem;color:var(--tx3)}
+  .powered{font-size:.66rem;color:var(--tx3);text-align:right;line-height:1.3}
+  .powered b{color:var(--tx2);font-weight:600}
+
+  /* ---- main ---- */
+  .main{display:flex;flex-direction:column;min-width:0;min-height:0;background:radial-gradient(1200px 500px at 60% -10%,rgba(237,106,28,.06),transparent 60%),var(--bg)}
+  .top{display:flex;align-items:center;gap:14px;padding:14px 22px;border-bottom:1px solid var(--line);background:rgba(19,20,24,.7);backdrop-filter:blur(8px)}
+  .menu-btn{display:none;background:transparent;border:none;color:var(--tx);padding:4px}
+  .top .av{width:38px;height:38px;border-radius:10px;background:var(--o-soft);display:grid;place-items:center;flex:0 0 auto}
+  .top .meta b{font-size:.98rem;font-weight:600}
+  .top .meta .status{font-size:.76rem;color:var(--tx3);display:flex;align-items:center;gap:6px;margin-top:2px}
+  .dot{width:7px;height:7px;border-radius:50%;background:#3ddc84;box-shadow:0 0 0 3px rgba(61,220,132,.18)}
+  .proto{margin-left:auto;font-size:.66rem;font-weight:600;letter-spacing:.08em;color:var(--o2);border:1px solid rgba(237,106,28,.4);background:var(--o-soft);padding:5px 10px;border-radius:999px}
+
+  .thread{flex:1;overflow-y:auto;padding:26px 0;min-height:0}
+  .thread-inner{max-width:760px;margin:0 auto;padding:0 22px;display:flex;flex-direction:column;gap:22px}
+
+  .msg{display:flex;gap:13px;align-items:flex-start;animation:rise .35s ease both}
+  @keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  .msg .ava{width:34px;height:34px;border-radius:9px;flex:0 0 auto;display:grid;place-items:center}
+  .msg.bot .ava{background:var(--o-soft)}
+  .msg.me{flex-direction:row-reverse}
+  .msg.me .ava{background:linear-gradient(135deg,#3a3d47,#2a2c33);font-weight:600;font-size:.78rem;color:var(--tx)}
+  .bubble{padding:14px 16px;border-radius:14px;font-size:.95rem;line-height:1.6;max-width:80%}
+  .msg.bot .bubble{background:var(--panel2);border:1px solid var(--line);border-top-left-radius:5px;color:var(--tx)}
+  .msg.me .bubble{background:var(--o);color:#1a1206;border-top-right-radius:5px;font-weight:500}
+  .bubble p{margin:0 0 9px} .bubble p:last-child{margin-bottom:0}
+  .bubble strong{font-weight:700}
+  .bubble ul,.bubble ol{margin:6px 0 9px;padding-left:20px}
+  .bubble li{margin:4px 0}
+  .bubble .lead{color:var(--o2);font-weight:600}
+  .source{display:inline-flex;align-items:center;gap:7px;margin-top:11px;font-size:.74rem;color:var(--tx3);
+    background:var(--card);border:1px solid var(--line);padding:5px 10px;border-radius:8px}
+  .source svg{opacity:.7}
+
+  .chips{display:flex;flex-wrap:wrap;gap:9px;margin-top:4px}
+  .chip{background:var(--card);border:1px solid var(--line2);color:var(--tx);font-size:.85rem;
+    padding:9px 14px;border-radius:999px;transition:border .14s,background .14s,transform .12s}
+  .chip:hover{border-color:var(--o);background:var(--o-soft);transform:translateY(-1px)}
+
+  .typing{display:flex;gap:5px;padding:16px}
+  .typing span{width:8px;height:8px;border-radius:50%;background:var(--tx3);animation:blink 1.3s infinite}
+  .typing span:nth-child(2){animation-delay:.18s}.typing span:nth-child(3){animation-delay:.36s}
+  @keyframes blink{0%,60%,100%{opacity:.25;transform:translateY(0)}30%{opacity:1;transform:translateY(-3px)}}
+
+  /* ---- composer ---- */
+  .composer{padding:14px 22px 20px;border-top:1px solid var(--line);background:var(--bg)}
+  .composer-inner{max-width:760px;margin:0 auto}
+  .inputbar{display:flex;align-items:flex-end;gap:10px;background:var(--panel2);border:1px solid var(--line2);border-radius:16px;padding:8px 8px 8px 16px;transition:border .15s}
+  .inputbar:focus-within{border-color:var(--o)}
+  .inputbar textarea{flex:1;background:transparent;border:none;outline:none;color:var(--tx);font-family:inherit;font-size:.95rem;
+    line-height:1.5;resize:none;max-height:140px;padding:7px 0}
+  .inputbar textarea::placeholder{color:var(--tx3)}
+  .send{width:38px;height:38px;flex:0 0 auto;border:none;border-radius:11px;background:var(--o);display:grid;place-items:center;transition:background .15s,transform .12s}
+  .send:hover{background:var(--o2);transform:translateY(-1px)}
+  .send:disabled{background:#3a3d47;cursor:not-allowed;transform:none}
+  .hint{text-align:center;font-size:.72rem;color:var(--tx3);margin-top:10px}
+  .hint b{color:var(--tx2)}
+
+  .backdrop{display:none}
+
+  @media(max-width:820px){
+    .app{grid-template-columns:1fr}
+    .side{position:fixed;inset:0 auto 0 0;width:272px;z-index:40;transform:translateX(-100%);transition:transform .25s ease}
+    .side.open{transform:none}
+    .menu-btn{display:block}
+    .backdrop.show{display:block;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:30}
+    .bubble{max-width:86%}
+  }
+  @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- SIDEBAR -->
+  <aside class="side" id="side">
+    <div class="side-top">
+      <div class="brand">
+        <svg class="logo" viewBox="0 0 40 40" aria-hidden="true">
+          <path d="M20 2C13 2 2 9 2 22a18 18 0 1 0 36 0c0-8-7-13-12-17C23 3 22 2 20 2Z" fill="#ED6A1C"/>
+          <rect x="18.4" y="11" width="3.2" height="18" rx="1.4" fill="#fff"/>
+          <rect x="11" y="18.4" width="18" height="3.2" rx="1.4" fill="#fff"/>
+        </svg>
+        <div class="name">Asistente 4D<small>Conocimiento interno</small></div>
+      </div>
+      <button class="new-btn" onclick="resetChat()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1a1206" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+        Nueva conversación
+      </button>
+    </div>
+
+    <div class="side-scroll">
+      <div class="side-label">Temas frecuentes</div>
+      <button class="topic" onclick="ask('¿Cómo se cierra una producción?')">
+        <span class="ti"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ED6A1C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h16M4 18h10"/></svg></span>
+        Procesos de producción
+      </button>
+      <button class="topic" onclick="ask('¿Quién hace qué en 4D?')">
+        <span class="ti"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ED6A1C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3"/><circle cx="17" cy="9" r="2.3"/><path d="M3 19c0-3 2.7-5 6-5s6 2 6 5M15 19c0-1.8.7-3.2 2-4"/></svg></span>
+        Roles y responsabilidades
+      </button>
+      <button class="topic" onclick="ask('Recién entré, ¿por dónde empiezo?')">
+        <span class="ti"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ED6A1C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v6m0 0 3-3m-3 3L9 5"/><rect x="4" y="9" width="16" height="12" rx="2"/></svg></span>
+        Onboarding
+      </button>
+      <button class="topic" onclick="ask('¿Quiénes son nuestros clientes?')">
+        <span class="ti"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ED6A1C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="14" rx="2"/><path d="M8 21h8M12 18v3"/></svg></span>
+        Datos de la empresa
+      </button>
+
+      <div class="side-sep"></div>
+      <div class="side-label">Recientes</div>
+      <button class="recent" onclick="ask('¿Cómo cargo una pauta publicitaria nueva?')">Cómo cargo una pauta nueva</button>
+      <button class="recent" onclick="ask('¿Quiénes son los fundadores de 4D?')">Fundadores y dirección</button>
+      <button class="recent" onclick="ask('¿Qué herramientas usamos internamente?')">Herramientas internas</button>
+      <button class="recent" onclick="ask('¿Cómo medimos los resultados?')">Cómo medimos resultados</button>
+    </div>
+
+    <div class="side-foot">
+      <div class="userchip">
+        <div class="av">SM</div>
+        <div class="who"><b>Sofía Méndez</b><span>Producción</span></div>
+      </div>
+      <div class="powered">Desarrollado por<br><b>Andamio</b></div>
+    </div>
+  </aside>
+  <div class="backdrop" id="backdrop" onclick="toggleSide(false)"></div>
+
+  <!-- MAIN -->
+  <main class="main">
+    <header class="top">
+      <button class="menu-btn" onclick="toggleSide(true)" aria-label="Abrir menú">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+      </button>
+      <div class="av">
+        <svg width="22" height="22" viewBox="0 0 40 40" aria-hidden="true">
+          <path d="M20 2C13 2 2 9 2 22a18 18 0 1 0 36 0c0-8-7-13-12-17C23 3 22 2 20 2Z" fill="#ED6A1C"/>
+          <rect x="18.4" y="11" width="3.2" height="18" rx="1.4" fill="#fff"/>
+          <rect x="11" y="18.4" width="18" height="3.2" rx="1.4" fill="#fff"/>
+        </svg>
+      </div>
+      <div class="meta">
+        <b>Asistente 4D</b>
+        <div class="status"><span class="dot"></span> En línea · entrenado con los manuales de 4D</div>
+      </div>
+      <span class="proto">PROTOTIPO · DEMO</span>
+    </header>
+
+    <div class="thread" id="thread">
+      <div class="thread-inner" id="threadInner"><!-- messages injected --></div>
+    </div>
+
+    <div class="composer">
+      <div class="composer-inner">
+        <div class="inputbar">
+          <textarea id="input" rows="1" placeholder="Escribí tu consulta… ej. ¿cómo se cierra una producción?"></textarea>
+          <button class="send" id="send" onclick="handleSend()" aria-label="Enviar">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1a1206" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>
+          </button>
+        </div>
+        <div class="hint">Asistente interno de 4D Producciones · <b>prototipo</b> con respuestas basadas en los manuales documentados por Andamio</div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+const threadInner = document.getElementById('threadInner');
+const thread = document.getElementById('thread');
+const input = document.getElementById('input');
+
+/* ---------- knowledge base ---------- */
+const KB = [
+  { id:'cierre', src:'Manual de Procesos · Producción',
+    kw:['cerrar','cierre','cerra','produccion','proyecto','flujo','terminar','finalizar','proceso de produccion','entregar'],
+    a:`<p class="lead">Cierre de una producción multiplataforma</p>
+       <p>El circuito estándar tiene 7 pasos, con un responsable claro en cada uno:</p>
+       <ol>
+         <li><strong>Brief y propuesta</strong> — Comercial toma el pedido del anunciante y arma la propuesta.</li>
+         <li><strong>Aprobación y orden</strong> — Aprobada la pauta, Administración de Ventas genera la orden de producción en <strong>Tango</strong>.</li>
+         <li><strong>Asignación</strong> — Producción asigna equipo y define el plan en TV, radio y/o digital.</li>
+         <li><strong>Realización</strong> — Contenidos (Producción, Redacción y Redes) ejecuta y arma las piezas.</li>
+         <li><strong>Revisión y OK del cliente</strong> — Se valida con el anunciante antes de salir al aire.</li>
+         <li><strong>Emisión / publicación</strong> — Sale en los soportes contratados y se registra la salida.</li>
+         <li><strong>Facturación y cierre</strong> — Administración factura, Cobranzas hace el seguimiento y el proyecto se archiva.</li>
+       </ol>
+       <p>Regla práctica: una producción <strong>no se da por cerrada</strong> hasta tener la conformidad del cliente y la factura emitida.</p>` },
+
+  { id:'pauta', src:'Manual de Procesos · Comercial',
+    kw:['pauta','publicidad','publicitaria','anunciante','campaña','campana','cargar pauta','orden de pauta','espacio','vender','venta'],
+    a:`<p class="lead">Cargar una pauta publicitaria nueva</p>
+       <ol>
+         <li><strong>Ventas</strong> cierra con el anunciante y completa la orden de pauta (soporte, fechas, importe, condiciones).</li>
+         <li><strong>Administración de Ventas</strong> la registra en Tango y verifica disponibilidad de los espacios.</li>
+         <li>Si hay <strong>descuento fuera de tabla</strong>, requiere visto bueno de Dirección Comercial (ver matriz de delegación).</li>
+         <li><strong>Contenidos / Producción</strong> coordina la salida en el medio acordado.</li>
+         <li><strong>Facturación</strong> emite y <strong>Cobranzas</strong> hace el seguimiento del pago.</li>
+       </ol>
+       <p>En <strong>años electorales</strong> el flujo se acelera: conviene cargar las órdenes con prioridad porque la demanda de pauta política y económica se dispara.</p>` },
+
+  { id:'flujo-areas', src:'Manual de Procesos · Coordinación interna',
+    kw:['areas','coordinacion','coordinan','circuito','entre areas','trabajan juntas','como se trabaja','flujo de trabajo'],
+    a:`<p class="lead">Cómo se coordinan las áreas</p>
+       <p>El trabajo fluye así: <strong>Comercial</strong> trae la oportunidad → <strong>Administración</strong> la formaliza y la registra → <strong>Contenidos</strong> la produce → <strong>Administración</strong> factura y cobra. <strong>RR.HH.</strong> sostiene al equipo de forma transversal.</p>
+       <p>El punto que más fricción genera hoy es el pase entre <strong>Comercial y Contenidos</strong>: por eso cada orden debe quedar registrada en Tango, no acordada de palabra.</p>` },
+
+  { id:'estacionalidad', src:'Manual Comercial · Estacionalidad',
+    kw:['electoral','elecciones','temporada','estacionalidad','verano','enero','febrero','año impar','impar','demanda','epoca'],
+    a:`<p class="lead">Estacionalidad del negocio</p>
+       <ul>
+         <li><strong>Años impares (electorales):</strong> pico de demanda. Crece el interés por contenido político y económico, y se incrementa la pauta pública. Es la temporada más fuerte.</li>
+         <li><strong>Enero–febrero:</strong> baja actividad. Muchos programas salen de vacaciones o quedan con suplentes y la audiencia cae.</li>
+       </ul>
+       <p>Planificar las campañas grandes y las contrataciones de cara al ciclo electoral es clave.</p>` },
+
+  { id:'organigrama', src:'Manual de Organización · Organigrama',
+    kw:['organigrama','roles','quien hace','quien hace que','estructura','responsabilidades','areas de la empresa','sectores'],
+    a:`<p class="lead">Quién hace qué en 4D</p>
+       <ul>
+         <li><strong>Dirección (Socios Gerentes) y CEO</strong> — conducción del negocio y decisiones estratégicas.</li>
+         <li><strong>Comercial</strong> — Relaciones Institucionales, Ventas y Administración de Ventas.</li>
+         <li><strong>Administración</strong> — Tesorería, Facturación, Entregas y Cobranzas.</li>
+         <li><strong>Contenidos</strong> — Redes, Producción y Redacción.</li>
+         <li><strong>Recursos Humanos</strong> — selección, clima y desarrollo del equipo.</li>
+       </ul>
+       <p>Se tercerizan: <strong>diseño gráfico, soporte técnico, desarrollo de software y servicios contables</strong>.</p>` },
+
+  { id:'comercial', src:'Manual de Organización · Comercial',
+    kw:['comercial','ventas','relaciones institucionales','administracion de ventas','vendedores'],
+    a:`<p class="lead">Área Comercial</p>
+       <p>Es el motor de ingresos. Se divide en:</p>
+       <ul>
+         <li><strong>Relaciones Institucionales</strong> — vínculo con anunciantes, agencias y el sector público.</li>
+         <li><strong>Ventas</strong> — cierre de pautas y paquetes multiplataforma.</li>
+         <li><strong>Administración de Ventas</strong> — carga de órdenes, control de disponibilidad y seguimiento.</li>
+       </ul>
+       <p>La propuesta de valor que vende el área: contenidos de actualidad con periodistas de renombre, un entorno <strong>seguro y de alta credibilidad</strong>.</p>` },
+
+  { id:'contenidos', src:'Manual de Organización · Contenidos',
+    kw:['contenidos','redaccion','redes','streaming','produccion de contenido','periodistas','editorial'],
+    a:`<p class="lead">Área de Contenidos</p>
+       <ul>
+         <li><strong>Producción</strong> — coordina la realización en TV, radio y digital.</li>
+         <li><strong>Redacción</strong> — genera el contenido periodístico (actualidad, política, economía).</li>
+         <li><strong>Redes</strong> — distribución en portales propios, redes sociales y el <strong>canal de streaming</strong>.</li>
+       </ul>
+       <p>Es el área que sostiene la red de periodistas asociados, uno de los activos más valiosos de 4D.</p>` },
+
+  { id:'administracion', src:'Manual de Organización · Administración',
+    kw:['administracion','tesoreria','facturacion','cobranzas','entregas','finanzas','pagos','cobrar'],
+    a:`<p class="lead">Área de Administración</p>
+       <ul>
+         <li><strong>Tesorería</strong> — manejo de fondos y pagos.</li>
+         <li><strong>Facturación</strong> — emisión de comprobantes de las pautas.</li>
+         <li><strong>Entregas</strong> — gestión de la documentación y conformidades.</li>
+         <li><strong>Cobranzas</strong> — seguimiento de pagos de anunciantes.</li>
+       </ul>
+       <p>Toda la operación se registra en el ERP <strong>Tango</strong>.</p>` },
+
+  { id:'aprobaciones', src:'Matriz de delegación',
+    kw:['aprueba','aprobacion','autoriza','decide','delegacion','quien firma','descuento','autorizacion','niveles'],
+    a:`<p class="lead">Quién aprueba qué (matriz de delegación)</p>
+       <ul>
+         <li><strong>Pauta estándar dentro de tabla</strong> → la cierra Ventas, sin escalar.</li>
+         <li><strong>Descuento especial o condición fuera de tabla</strong> → Dirección Comercial.</li>
+         <li><strong>Acuerdos con nuevos medios o periodistas asociados</strong> → Dirección / CEO.</li>
+         <li><strong>Gastos operativos del área</strong> → responsable de cada sector hasta su tope; por encima, Dirección.</li>
+       </ul>
+       <p>El objetivo de esta matriz es que las decisiones del día a día <strong>dejen de pasar por el CEO</strong> y se resuelvan en cada área.</p>` },
+
+  { id:'direccion', src:'Ficha institucional · 4D',
+    kw:['fundadores','socios','ceo','director','direccion','paulo','gabriel','morales','profiti','dueño','dueños','quien dirige'],
+    a:`<p class="lead">Dirección y fundadores</p>
+       <p>4D Producciones está dirigida por <strong>Paulo Morales</strong> y <strong>Gabriel Profiti</strong>, junto a otros socios históricos.</p>
+       <p>La empresa tiene <strong>15 años</strong> de trayectoria (fundada en 2011) y un staff de <strong>más de 70 profesionales</strong>. El CEO impulsa además iniciativas paralelas como la ONG <strong>TEActiva</strong>.</p>` },
+
+  { id:'onboarding', src:'Manual de Onboarding · Primera semana',
+    kw:['recien entre','recien','nuevo','nueva','empiezo','empezar','primer dia','primera semana','onboarding','ingreso','arranco','induccion','arrancar','llegue'],
+    a:`<p class="lead">¡Bienvenido/a a 4D! Tu primera semana</p>
+       <ol>
+         <li><strong>Día 1</strong> — Alta en sistemas (mail, <strong>Tango</strong> y accesos), recorrido por las áreas y presentación del equipo.</li>
+         <li><strong>Día 2–3</strong> — Lectura de los manuales de tu puesto y del proceso en el que vas a participar.</li>
+         <li><strong>Día 3–4</strong> — Acompañamiento de tu <strong>referente de área</strong> en tareas reales.</li>
+         <li><strong>Día 5</strong> — Primera tarea con autonomía y devolución con tu referente.</li>
+       </ol>
+       <p>Cualquier duda, este asistente está para responderte 24/7. Y si necesitás algo puntual, consultá a tu referente (preguntame “¿a quién le pregunto?”).</p>` },
+
+  { id:'referentes', src:'Manual de Onboarding · Referentes',
+    kw:['pregunto','a quien','referente','duda','consultar','ayuda','no se a quien','quien me ayuda'],
+    a:`<p class="lead">A quién consultar según el tema</p>
+       <ul>
+         <li><strong>Una pauta o un cliente</strong> → referente de Comercial.</li>
+         <li><strong>Una producción o contenido</strong> → referente de Contenidos / Producción.</li>
+         <li><strong>Una factura o un pago</strong> → referente de Administración.</li>
+         <li><strong>Vacaciones, licencias o clima</strong> → Recursos Humanos.</li>
+       </ul>
+       <p>Para lo cotidiano, primero probá acá: la mayoría de las respuestas ya están documentadas.</p>` },
+
+  { id:'herramientas', src:'Ficha institucional · Sistemas',
+    kw:['herramientas','sistema','sistemas','tango','erp','software','programa','plataforma','tecnologia','que usamos'],
+    a:`<p class="lead">Herramientas internas</p>
+       <ul>
+         <li><strong>Tango (ERP)</strong> — órdenes de pauta, facturación y administración. Es el sistema central.</li>
+         <li><strong>Portales informativos propios + canal de streaming</strong> — soportes de publicación.</li>
+         <li><strong>Redes sociales</strong> — distribución de contenidos.</li>
+       </ul>
+       <p>Nota interna: Tango está subaprovechado. Parte del plan de mejora es capacitar al equipo para sacarle todo el provecho y medir la rentabilidad por área en tiempo real.</p>` },
+
+  { id:'clientes', src:'Ficha institucional · Casos',
+    kw:['clientes','casos','exito','cartera','con quien trabajamos','medios','radios','canales','referencias'],
+    a:`<p class="lead">Clientes y casos de 4D</p>
+       <p>Producciones integrales multiplataforma para medios <strong>Tier 1</strong>, entre ellos:</p>
+       <ul>
+         <li><strong>Radio Continental</strong></li>
+         <li><strong>Canal de la Ciudad</strong></li>
+         <li><strong>FM Milenium</strong></li>
+         <li><strong>Radio Con Vos</strong></li>
+       </ul>
+       <p>El negocio se orienta a anunciantes <strong>privados y públicos</strong>, con alcance nacional gracias a acuerdos con frecuencias de radio y TV en todo el país.</p>` },
+
+  { id:'competencia', src:'Análisis competitivo',
+    kw:['competencia','competidor','silmar','rival','contra quien','mercado'],
+    a:`<p class="lead">Competencia</p>
+       <p>El principal competidor estratégico es <strong>Silmar Producciones</strong>: como 4D, produce y comercializa contenidos periodísticos de alto perfil. Opera fuerte en <strong>Radio Mitre</strong> y <strong>Radio Rivadavia</strong>, y lleva unos <strong>30 años</strong> en el mercado.</p>
+       <p>El diferencial de 4D es su enfoque <strong>360 multiplataforma</strong> y su red de periodistas asociados.</p>` },
+
+  { id:'quehace', src:'Ficha institucional · 4D',
+    kw:['que hace 4d','que hacemos','dedica','quienes somos','negocio','360','de que se trata','la empresa'],
+    a:`<p class="lead">Qué es 4D Producciones</p>
+       <p>Somos una <strong>productora 360</strong> con sede en CABA. Producimos y comercializamos <strong>contenidos periodísticos</strong> y vendemos <strong>espacios publicitarios</strong> en TV, radio, portales propios y nuestro canal de streaming.</p>
+       <p>Nuestra fuerza está en las <strong>asociaciones con periodistas de renombre</strong> y en ofrecer a las marcas un entorno seguro y creíble para pautar.</p>` },
+
+  { id:'kpis', src:'Tablero de gestión',
+    kw:['resultados','kpi','kpis','medir','metricas','indicadores','objetivos','performance','como medimos'],
+    a:`<p class="lead">Cómo medimos los resultados</p>
+       <ul>
+         <li><strong>Crecimiento de ventas</strong> vs. el ejercicio anterior.</li>
+         <li><strong>Cartera de clientes</strong> comparada con el período previo.</li>
+         <li><strong>Cumplimiento de objetivos</strong> por área.</li>
+         <li><strong>Cantidad y prestigio de periodistas asociados</strong> respecto al año anterior.</li>
+       </ul>` },
+
+  { id:'proveedores', src:'Ficha institucional · Proveedores',
+    kw:['proveedores','tercerizado','tercerizados','terceros','externos','diseño','soporte','desarrollo','contable','tercerizamos'],
+    a:`<p class="lead">Servicios tercerizados</p>
+       <p>Para mantener una estructura ágil, 4D terceriza:</p>
+       <ul>
+         <li><strong>Diseño gráfico</strong></li>
+         <li><strong>Soporte técnico</strong></li>
+         <li><strong>Desarrollo de software</strong></li>
+         <li><strong>Servicios contables</strong></li>
+       </ul>` },
+];
+
+const GREETING = `<p>¡Hola, Sofía! 👋 Soy el <strong>Asistente interno de 4D</strong>, entrenado con los manuales, procesos y datos de la empresa.</p><p>Preguntame lo que necesites: cómo se cierra una producción, quién hace qué, por dónde arrancar si recién entrás, o datos de clientes y proveedores.</p>`;
+
+const STARTERS = [
+  '¿Cómo se cierra una producción?',
+  '¿Quién hace qué en 4D?',
+  'Recién entré, ¿por dónde empiezo?',
+  '¿Quiénes son nuestros clientes?',
+  '¿Cómo cargo una pauta nueva?',
+];
+
+/* ---------- matching ---------- */
+function norm(s){return s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9ñ ]/g,' ').replace(/\s+/g,' ').trim();}
+function match(q){
+  const n = norm(q);
+  let best=null, score=0;
+  for(const e of KB){
+    let s=0;
+    for(const k of e.kw){ if(n.includes(norm(k))) s += norm(k).includes(' ')?2:1; }
+    if(s>score){score=s;best=e;}
+  }
+  return score>0?best:null;
+}
+
+/* ---------- rendering ---------- */
+function escapeHtml(t){const d=document.createElement('div');d.textContent=t;return d.innerHTML;}
+
+function addUser(text){
+  const m=document.createElement('div'); m.className='msg me';
+  m.innerHTML=`<div class="ava">SM</div><div class="bubble">${escapeHtml(text)}</div>`;
+  threadInner.appendChild(m); scrollDown();
+}
+function botAvatar(){
+  return `<div class="ava"><svg width="20" height="20" viewBox="0 0 40 40" aria-hidden="true"><path d="M20 2C13 2 2 9 2 22a18 18 0 1 0 36 0c0-8-7-13-12-17C23 3 22 2 20 2Z" fill="#ED6A1C"/><rect x="18.4" y="11" width="3.2" height="18" rx="1.4" fill="#fff"/><rect x="11" y="18.4" width="18" height="3.2" rx="1.4" fill="#fff"/></svg></div>`;
+}
+function addBot(html, source, chips){
+  const m=document.createElement('div'); m.className='msg bot';
+  let inner=`<div class="bubble">${html}`;
+  if(source){inner+=`<div class="source"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h11l5 5v11a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1Z"/><path d="M14 4v5h5"/></svg>Fuente: ${escapeHtml(source)}</div>`;}
+  inner+=`</div>`;
+  m.innerHTML=botAvatar()+inner;
+  threadInner.appendChild(m);
+  if(chips){
+    const c=document.createElement('div'); c.className='msg bot';
+    let ch='<div style="width:34px;flex:0 0 auto"></div><div class="chips">';
+    chips.forEach(t=>ch+=`<button class="chip" onclick="ask('${t.replace(/'/g,"\\'")}')">${escapeHtml(t)}</button>`);
+    ch+='</div>'; c.innerHTML=ch; threadInner.appendChild(c);
+  }
+  scrollDown();
+}
+function showTyping(){
+  const m=document.createElement('div'); m.className='msg bot'; m.id='typing';
+  m.innerHTML=botAvatar()+`<div class="bubble"><div class="typing"><span></span><span></span><span></span></div></div>`;
+  threadInner.appendChild(m); scrollDown();
+}
+function removeTyping(){const t=document.getElementById('typing'); if(t)t.remove();}
+function scrollDown(){requestAnimationFrame(()=>{thread.scrollTop=thread.scrollHeight;});}
+
+/* ---------- flow ---------- */
+function respond(q){
+  showTyping();
+  const e=match(q);
+  setTimeout(()=>{
+    removeTyping();
+    if(e){ addBot(e.a, e.src); }
+    else {
+      addBot(`<p>Todavía no tengo eso documentado, pero puedo ayudarte con varias cosas. Probá con una de estas:</p>`, null, STARTERS);
+    }
+  }, 650+Math.random()*400);
+}
+function ask(text){ if(window.innerWidth<=820) toggleSide(false); addUser(text); respond(text); }
+function handleSend(){
+  const v=input.value.trim(); if(!v)return;
+  input.value=''; autoGrow(); addUser(v); respond(v);
+}
+function resetChat(){
+  threadInner.innerHTML='';
+  addBot(GREETING, null, STARTERS);
+  if(window.innerWidth<=820) toggleSide(false);
+  input.focus();
+}
+
+/* ---------- ui niceties ---------- */
+function autoGrow(){input.style.height='auto';input.style.height=Math.min(input.scrollHeight,140)+'px';}
+input.addEventListener('input',autoGrow);
+input.addEventListener('keydown',e=>{ if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();handleSend();} });
+function toggleSide(open){
+  document.getElementById('side').classList.toggle('open',open);
+  document.getElementById('backdrop').classList.toggle('show',open);
+}
+
+/* init */
+addBot(GREETING, null, STARTERS);
+</script>
+</body>
+</html>
